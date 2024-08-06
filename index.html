@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Environment</title>
+    <style>
+        body { margin: 0; }
+        #scene-container { width: 100vw; height: 100vh; display: block; }
+    </style>
+</head>
+<body>
+    <div id="scene-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+
+    <script>
+        // Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+
+        // Orbit Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        // Add Environment
+        const gridHelper = new THREE.GridHelper(1000, 1000, 0x00ff00, 0x007700);
+        scene.add(gridHelper);
+
+        // Tree function
+        function createTree(x, z) {
+            const trunkGeometry = new THREE.CylinderGeometry(1, 1, 5);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+
+            const foliageGeometry = new THREE.DodecahedronGeometry(4);
+            const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+            foliage.position.y = 6;
+
+            const tree = new THREE.Group();
+            tree.add(trunk);
+            tree.add(foliage);
+            tree.position.set(x, 0, z);
+            scene.add(tree);
+        }
+
+        // Add multiple trees
+        for (let i = -50; i < 50; i += 10) {
+            for (let j = -50; j < 50; j += 10) {
+                createTree(i, j);
+            }
+        }
+
+        // Add 3D Objects
+        const objects = [];
+
+        // Torus
+        const torusGeometry = new THREE.TorusGeometry(5, 1.5, 16, 100);
+        const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xff6347 });
+        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+        torus.position.set(-10, 5, -20);
+        scene.add(torus);
+        objects.push(torus);
+
+        // Cone
+        const coneGeometry = new THREE.ConeGeometry(5, 20, 32);
+        const coneMaterial = new THREE.MeshStandardMaterial({ color: 0x008080 });
+        const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+        cone.position.set(10, 10, -30);
+        scene.add(cone);
+        objects.push(cone);
+
+        // Cylinder
+        const cylinderGeometry = new THREE.CylinderGeometry(5, 5, 20, 32);
+        const cylinderMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700 });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.position.set(0, 10, -40);
+        scene.add(cylinder);
+        objects.push(cylinder);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(10, 20, 10);
+        scene.add(pointLight);
+
+        // Load Font and Add Text
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+            const textGeometry = new THREE.TextGeometry('Explore the Environment', {
+                font: font,
+                size: 3,
+                height: 0.5,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.1,
+                bevelSize: 0.1,
+                bevelOffset: 0,
+                bevelSegments: 5
+            });
+            const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            textMesh.position.set(-20, 15, -30);
+            scene.add(textMesh);
+        });
+
+        // Camera Position
+        camera.position.set(0, 20, 50);
+        controls.update();
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate objects
+            objects.forEach(obj => {
+                obj.rotation.x += 0.01;
+                obj.rotation.y += 0.01;
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
